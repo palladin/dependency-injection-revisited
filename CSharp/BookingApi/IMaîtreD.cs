@@ -9,5 +9,6 @@ namespace Ploeh.Samples.BookingApi
     public interface IMaîtreD
     {
         IReservationsProgram<int?> TryAccept(Reservation reservation);
+
     }
 }
