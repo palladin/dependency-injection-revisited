@@ -15,7 +15,7 @@ namespace Ploeh.Samples.BookingApi.UnitTests
         public void TryAcceptReturnsReservationIdInHappyPathScenario(
             Reservation reservation,
             IReadOnlyCollection<Reservation> reservations,
-            MaîtreDEff sut,
+            MaîtreDEffects sut,
             int excessCapacity,
             int expected)
         {
@@ -37,7 +37,7 @@ namespace Ploeh.Samples.BookingApi.UnitTests
             Reservation reservation,
             IReadOnlyCollection<Reservation> reservations,
             int id,
-            MaîtreDEff sut)
+            MaîtreDEffects sut)
         {
             reservation.IsAccepted = false;
 
@@ -53,7 +53,7 @@ namespace Ploeh.Samples.BookingApi.UnitTests
             Reservation reservation,
             IReadOnlyCollection<Reservation> reservations,
             int id,
-            MaîtreDEff sut)
+            MaîtreDEffects sut)
         {
             reservation.IsAccepted = false;
             var reservedSeats = reservations.Sum(r => r.Quantity);

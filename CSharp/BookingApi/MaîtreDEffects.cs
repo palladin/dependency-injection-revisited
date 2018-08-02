@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace Ploeh.Samples.BookingApi
 {
-    public class MaîtreDEff //: IMaîtreD
+    public class MaîtreDEffects 
     {
-        public MaîtreDEff(int capacity)
+        public MaîtreDEffects(int capacity)
         {
             Capacity = capacity;
         }
 
         public int Capacity { get; }
 
-        public async Eff<int?> TryAccept(Reservation reservation)
+        public async ReservationsProgram<int?> TryAccept(Reservation reservation)
         {
             if (!await ReservationsRepository.IsReservationInFuture(reservation))
                 return null;
@@ -30,9 +30,9 @@ namespace Ploeh.Samples.BookingApi
             return await ReservationsRepository.Create(reservation);
         }
 
-        public MaîtreDEff WithCapacity(int newCapacity)
+        public MaîtreDEffects WithCapacity(int newCapacity)
         {
-            return new MaîtreDEff(newCapacity);
+            return new MaîtreDEffects(newCapacity);
         }
     }
 }

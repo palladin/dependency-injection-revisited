@@ -49,9 +49,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Effects.cs" />
     <Compile Include="Free.cs" />
-    <Compile Include="MaîtreDEff.cs" />
+    <Compile Include="MaîtreDEffects.cs" />
     <Compile Include="Pure.cs" />
     <Compile Include="ReservationsInstruction.cs" />
     <Compile Include="Create.cs" />
@@ -66,6 +65,8 @@
     <Compile Include="IReservationsInstructionVisitor.cs" />
     <Compile Include="ReservationsProgram.cs" />
     <Compile Include="IReservationsProgramVisitor.cs" />
+    <Compile Include="ReservationsProgramBuilder.cs" />
+    <Compile Include="ReservationsProgramEffects.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

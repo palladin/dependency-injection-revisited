@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Ploeh.Samples.BookingApi.UnitTests
 {
-    public class StubReservationsHandler : EffectHandler
+    public class StubReservationsHandler : IReservationsInstrHandler
     {
 
         private readonly bool isInFuture;
@@ -24,22 +24,19 @@ namespace Ploeh.Samples.BookingApi.UnitTests
             this.id = id;
         }
 
-        public override async Task Handle<TResult>(IEffect<TResult> effect)
+        public async Task Handle(IsReservationInFuture instr)
         {
-            switch (effect)
-            {
-                case IsReservationInFuture isReservationInFuture:
-                    isReservationInFuture.SetResult(isInFuture);
-                    break;
-                case ReadReservations readReservations:
-                    readReservations.SetResult(reservations);
-                    break;
-                case CreateReservation createReservation:
-                    createReservation.SetResult(id);
-                    break;
-                default:
-                    throw new EffException($"Unhandled effect {effect.GetType().Name}");
-            }
+            instr.SetResult(isInFuture);
+        }
+
+        public async Task Handle(ReadReservations instr)
+        {
+            instr.SetResult(reservations);
+        }
+
+        public async Task Handle(CreateReservation instr)
+        {
+            instr.SetResult(id);
         }
     }
 }
