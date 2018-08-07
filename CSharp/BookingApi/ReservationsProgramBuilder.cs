@@ -52,7 +52,7 @@ namespace Ploeh.Samples.BookingApi
             where TAwaiter : ReservationsInstr
             where TStateMachine : IAsyncStateMachine
         {
-            this.prg = new Await<TResult>(awaiter, this.cont);
+            this.prg = awaiter.Await(this.cont);
         }
 
         [SecuritySafeCritical]
@@ -60,7 +60,7 @@ namespace Ploeh.Samples.BookingApi
             where TAwaiter : ReservationsInstr
             where TStateMachine : IAsyncStateMachine
         {
-            this.prg = new Await<TResult>(awaiter, this.cont);
+            this.prg = awaiter.Await(this.cont);
         }
 
     }

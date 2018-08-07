@@ -20,7 +20,7 @@ namespace Ploeh.Samples.BookingApi
             throw new NotImplementedException();
         }
 
-        public abstract Task Accept(IReservationsInstrHandler handler);
+        public abstract Await<TReturn> Await<TReturn>(Func<ReservationsProgram<TReturn>> cont);
     }
 
     public abstract class ReservationsInstr<TResult> : ReservationsInstr
@@ -38,6 +38,12 @@ namespace Ploeh.Samples.BookingApi
             this.hasResult = true;
             this.result = result;
         }
+        public abstract Task<ReservationsProgram<TReturn>> Accept<TReturn>(IReservationsInstrHandler handler, Func<TResult, ReservationsProgram<TReturn>> cont);
+
+        public override Await<TReturn> Await<TReturn>(Func<ReservationsProgram<TReturn>> cont)
+        {
+            return new Await<TResult, TReturn>(this, x => { this.SetResult(x); return cont(); });
+        }
     }
 
     public class IsReservationInFuture : ReservationsInstr<bool>
@@ -45,9 +51,9 @@ namespace Ploeh.Samples.BookingApi
         public Reservation Reservation { get; set; }
         public IsReservationInFuture() : base() { }
 
-        public override Task Accept(IReservationsInstrHandler handler)
+        public override Task<ReservationsProgram<TReturn>> Accept<TReturn>(IReservationsInstrHandler handler, Func<bool, ReservationsProgram<TReturn>> cont)
         {
-            return handler.Handle(this);
+            return handler.Handle(this, cont);
         }
     }
 
@@ -56,9 +62,9 @@ namespace Ploeh.Samples.BookingApi
         public DateTimeOffset Date { get; set; }
         public ReadReservations() : base() { }
 
-        public override Task Accept(IReservationsInstrHandler handler)
+        public override Task<ReservationsProgram<TReturn>> Accept<TReturn>(IReservationsInstrHandler handler, Func<IReadOnlyCollection<Reservation>, ReservationsProgram<TReturn>> cont)
         {
-            return handler.Handle(this);
+            return handler.Handle(this, cont);
         }
     }
 
@@ -67,9 +73,9 @@ namespace Ploeh.Samples.BookingApi
         public Reservation Reservation { get; set; }
         public CreateReservation() : base() { }
 
-        public override Task Accept(IReservationsInstrHandler handler)
+        public override Task<ReservationsProgram<TReturn>> Accept<TReturn>(IReservationsInstrHandler handler, Func<int, ReservationsProgram<TReturn>> cont)
         {
-            return handler.Handle(this);
+            return handler.Handle(this, cont);
         }
     }
 
@@ -85,9 +91,9 @@ namespace Ploeh.Samples.BookingApi
 
     public interface IReservationsInstrHandler
     {
-        Task Handle(IsReservationInFuture instr);
-        Task Handle(ReadReservations instr);
-        Task Handle(CreateReservation instr);
+        Task<ReservationsProgram<TResult>> Handle<TResult>(IsReservationInFuture instr, Func<bool, ReservationsProgram<TResult>> cont);
+        Task<ReservationsProgram<TResult>> Handle<TResult>(ReadReservations instr, Func<IReadOnlyCollection<Reservation>, ReservationsProgram<TResult>> cont);
+        Task<ReservationsProgram<TResult>> Handle<TResult>(CreateReservation instr, Func<int, ReservationsProgram<TResult>> cont);
     }
 
     #endregion
@@ -99,15 +105,25 @@ namespace Ploeh.Samples.BookingApi
     {
     }
 
-    public class Await<TResult> : ReservationsProgram<TResult>
+    public abstract class Await<TResult> : ReservationsProgram<TResult>
     {
-        public ReservationsInstr Instr { get; private set; }
-        public Func<ReservationsProgram<TResult>> Cont { get; set; }
+        public abstract Task<ReservationsProgram<TResult>> Accept(IReservationsInstrHandler handler);
+    }
+
+    public class Await<TBind, TResult> : Await<TResult>
+    {
+        public ReservationsInstr<TBind> Instr { get; private set; }
+        public Func<TBind, ReservationsProgram<TResult>> Cont { get; set; }
         
-        public Await(ReservationsInstr instr, Func<ReservationsProgram<TResult>> cont)
+        public Await(ReservationsInstr<TBind> instr, Func<TBind, ReservationsProgram<TResult>> cont)
         {
             this.Instr = instr;
             this.Cont = cont;
+        }
+
+        public override Task<ReservationsProgram<TResult>> Accept(IReservationsInstrHandler handler)
+        {
+            return Instr.Accept(handler, Cont);
         }
     }
 
@@ -154,8 +170,7 @@ namespace Ploeh.Samples.BookingApi
                         prg = delay.Func();
                         break;
                     case Await<TResult> _await:
-                        await _await.Instr.Accept(handler);
-                        prg = _await.Cont();
+                        prg = await _await.Accept(handler);
                         break;
                     default:
                         throw new NotSupportedException($"{prg.GetType().Name}");
