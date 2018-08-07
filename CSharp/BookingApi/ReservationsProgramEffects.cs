@@ -38,7 +38,7 @@ namespace Ploeh.Samples.BookingApi
             this.hasResult = true;
             this.result = result;
         }
-        public abstract Task<ReservationsProgram<TReturn>> Accept<TReturn>(IReservationsInstrHandler handler, Func<TResult, ReservationsProgram<TReturn>> cont);
+        public abstract Task<TResult> Accept(IReservationsInstrHandler handler);
 
         public override Await<TReturn> Await<TReturn>(Func<ReservationsProgram<TReturn>> cont)
         {
@@ -51,9 +51,9 @@ namespace Ploeh.Samples.BookingApi
         public Reservation Reservation { get; set; }
         public IsReservationInFuture() : base() { }
 
-        public override Task<ReservationsProgram<TReturn>> Accept<TReturn>(IReservationsInstrHandler handler, Func<bool, ReservationsProgram<TReturn>> cont)
+        public override Task<bool> Accept(IReservationsInstrHandler handler)
         {
-            return handler.Handle(this, cont);
+            return handler.Handle(this);
         }
     }
 
@@ -62,9 +62,9 @@ namespace Ploeh.Samples.BookingApi
         public DateTimeOffset Date { get; set; }
         public ReadReservations() : base() { }
 
-        public override Task<ReservationsProgram<TReturn>> Accept<TReturn>(IReservationsInstrHandler handler, Func<IReadOnlyCollection<Reservation>, ReservationsProgram<TReturn>> cont)
+        public override Task<IReadOnlyCollection<Reservation>> Accept(IReservationsInstrHandler handler)
         {
-            return handler.Handle(this, cont);
+            return handler.Handle(this);
         }
     }
 
@@ -73,9 +73,9 @@ namespace Ploeh.Samples.BookingApi
         public Reservation Reservation { get; set; }
         public CreateReservation() : base() { }
 
-        public override Task<ReservationsProgram<TReturn>> Accept<TReturn>(IReservationsInstrHandler handler, Func<int, ReservationsProgram<TReturn>> cont)
+        public override Task<int> Accept(IReservationsInstrHandler handler)
         {
-            return handler.Handle(this, cont);
+            return handler.Handle(this);
         }
     }
 
@@ -91,9 +91,9 @@ namespace Ploeh.Samples.BookingApi
 
     public interface IReservationsInstrHandler
     {
-        Task<ReservationsProgram<TResult>> Handle<TResult>(IsReservationInFuture instr, Func<bool, ReservationsProgram<TResult>> cont);
-        Task<ReservationsProgram<TResult>> Handle<TResult>(ReadReservations instr, Func<IReadOnlyCollection<Reservation>, ReservationsProgram<TResult>> cont);
-        Task<ReservationsProgram<TResult>> Handle<TResult>(CreateReservation instr, Func<int, ReservationsProgram<TResult>> cont);
+        Task<bool> Handle(IsReservationInFuture instr);
+        Task<IReadOnlyCollection<Reservation>> Handle(ReadReservations instr);
+        Task<int> Handle(CreateReservation instr);
     }
 
     #endregion
@@ -121,9 +121,9 @@ namespace Ploeh.Samples.BookingApi
             this.Cont = cont;
         }
 
-        public override Task<ReservationsProgram<TResult>> Accept(IReservationsInstrHandler handler)
+        public override async Task<ReservationsProgram<TResult>> Accept(IReservationsInstrHandler handler)
         {
-            return Instr.Accept(handler, Cont);
+            return Cont(await Instr.Accept(handler));
         }
     }
 

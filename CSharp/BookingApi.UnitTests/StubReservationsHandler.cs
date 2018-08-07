@@ -24,19 +24,19 @@ namespace Ploeh.Samples.BookingApi.UnitTests
             this.id = id;
         }
 
-        public Task<ReservationsProgram<TResult>> Handle<TResult>(IsReservationInFuture instr, Func<bool, ReservationsProgram<TResult>> cont)
+        public Task<bool> Handle(IsReservationInFuture instr)
         {
-            return Task.FromResult(cont(isInFuture));
+            return Task.FromResult(isInFuture);
         }
 
-        public Task<ReservationsProgram<TResult>> Handle<TResult>(ReadReservations instr, Func<IReadOnlyCollection<Reservation>, ReservationsProgram<TResult>> cont)
+        public Task<IReadOnlyCollection<Reservation>> Handle(ReadReservations instr)
         {
-            return Task.FromResult(cont(reservations));
+            return Task.FromResult(reservations);
         }
 
-        public Task<ReservationsProgram<TResult>> Handle<TResult>(CreateReservation instr, Func<int, ReservationsProgram<TResult>> cont)
+        public Task<int> Handle(CreateReservation instr)
         {
-            return Task.FromResult(cont(id));
+            return Task.FromResult(id);
         }
     }
 }
